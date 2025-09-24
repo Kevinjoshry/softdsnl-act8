@@ -5,6 +5,11 @@ from tensorflow.keras import layers, models
 import numpy as np
 from datasets import load_dataset
 from sklearn.preprocessing import LabelEncoder
+from dataset import load_goemotions_data
+
+train_data, test_data = load_goemotions_data()
+# Continue with preprocessing and training
+
 
 # Load dataset
 dataset = load_dataset("go_emotions", split="train[:5000]")  # smaller subset for demo
