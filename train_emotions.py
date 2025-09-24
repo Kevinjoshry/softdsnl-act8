@@ -3,18 +3,21 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras import layers, models
 import numpy as np
-from datasets import load_dataset
+from datasets import load_from_disk
 from sklearn.preprocessing import LabelEncoder
-from dataset import load_goemotions_data
+import pickle
 
-train_data, test_data = load_goemotions_data()
-# Continue with preprocessing and training
+# Load dataset from disk
+dataset = load_from_disk("go_emotions_dataset")  # Assuming the dataset is saved locally
 
+# Accessing the splits
+train_data = dataset["train"]
+validation_data = dataset["validation"]
+test_data = dataset["test"]
 
-# Load dataset
-dataset = load_dataset("go_emotions", split="train[:5000]")  # smaller subset for demo
-texts = dataset["text"]
-labels = [l[0] if len(l) > 0 else 27 for l in dataset["labels"]]  # handle multi-label
+# Prepare data (You can choose to work with any split - here we use "train")
+texts = train_data["text"]
+labels = [l[0] if len(l) > 0 else 27 for l in train_data["labels"]]  # handle multi-label
 
 # Encode labels
 encoder = LabelEncoder()
@@ -39,13 +42,16 @@ model.compile(optimizer="adam",
               loss="sparse_categorical_crossentropy",
               metrics=["accuracy"])
 
-# Train
+# Train the model
 model.fit(padded, labels_encoded, epochs=5, validation_split=0.2)
 
 # Save model + tokenizer + encoder
 model.save("emotion_model.h5")
-import pickle
+
+# Save tokenizer
 with open("tokenizer.pkl", "wb") as f:
     pickle.dump(tokenizer, f)
+
+# Save encoder
 with open("encoder.pkl", "wb") as f:
     pickle.dump(encoder, f)
